@@ -1,5 +1,5 @@
-import { useState, useEffect, useContext } from "react";
-import API from "../api/api";
+import React, { useState, useEffect, useContext } from "react";
+import { getFriendList } from "../api/api";
 import { AuthContext } from "../context/AuthContext";
 
 const FriendList = () => {
@@ -7,11 +7,9 @@ const FriendList = () => {
     const [friends, setFriends] = useState([]);
 
     useEffect(() => {
-        const fetchFriends = async () => {
-            const { data } = await API.get(`/friends/${user._id}`);
-            setFriends(data);
-        };
-        fetchFriends();
+        if (user) {
+            getFriendList(user._id).then((res) => setFriends(res.data));
+        }
     }, [user]);
 
     return (

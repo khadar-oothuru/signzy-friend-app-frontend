@@ -1,8 +1,7 @@
-import { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect } from "react";
 import API from "../api/api";
 
 export const AuthContext = createContext();
-
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
@@ -13,7 +12,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const { data } = await API.post("/auth/login", { email, password });
+            const { data } = await API.post("/login", { email, password });
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
             setUser(data.user);
@@ -29,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, setUser, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

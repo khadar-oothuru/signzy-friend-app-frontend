@@ -1,5 +1,5 @@
-import { useState, useEffect, useContext } from "react";
-import API from "../api/api";
+import React, { useState, useEffect, useContext } from "react";
+import { getFriendRequests, acceptFriendRequest } from "../api/api";
 import { AuthContext } from "../context/AuthContext";
 
 const FriendRequests = () => {
@@ -7,29 +7,30 @@ const FriendRequests = () => {
     const [requests, setRequests] = useState([]);
 
     useEffect(() => {
-        const fetchRequests = async () => {
-            const { data } = await API.get(`/friend-requests/${user._id}`);
-            setRequests(data);
-        };
-        fetchRequests();
+        if (user) {
+            getFriendRequests(user._id).then((res) => setRequests(res.data));
+        }
     }, [user]);
 
-    const acceptRequest = async (friendId) => {
-        await API.post("/friends/accept", { userId: user._id, friendId });
-        setRequests(requests.filter(req => req._id !== friendId));
+    const handleAccept = async (friendId) => {
+        await acceptFriendRequest(user._id, friendId);
+        setRequests(requests.filter(id => id !== friendId));
     };
 
     return (
         <div>
             <h3>Friend Requests</h3>
-            <ul>
-                {requests.map(req => (
-                    <li key={req._id}>
-                        {req.username} 
-                        <button onClick={() => acceptRequest(req._id)}>Accept</button>
-                    </li>
-                ))}
-            </ul>
+            {requests.length > 0 ? (
+                <ul>
+                    {requests.map((id) => (
+                        <li key={id}>
+                            {id} <button onClick={() => handleAccept(id)}>Accept</button>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p>No friend requests.</p>
+            )}
         </div>
     );
 };

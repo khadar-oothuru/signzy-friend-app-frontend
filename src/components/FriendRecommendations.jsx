@@ -1,5 +1,5 @@
-import { useState, useEffect, useContext } from "react";
-import API from "../api/api";
+import React, { useState, useEffect, useContext } from "react";
+import { getFriendRecommendations, sendFriendRequest } from "../api/api";
 import { AuthContext } from "../context/AuthContext";
 
 const FriendRecommendations = () => {
@@ -7,21 +7,30 @@ const FriendRecommendations = () => {
     const [recommendations, setRecommendations] = useState([]);
 
     useEffect(() => {
-        const fetchRecommendations = async () => {
-            const { data } = await API.get(`/friends/recommendations/${user._id}`);
-            setRecommendations(data);
-        };
-        fetchRecommendations();
+        if (user) {
+            getFriendRecommendations(user._id).then((res) => setRecommendations(res.data));
+        }
     }, [user]);
+
+    const handleSendRequest = async (receiverId) => {
+        await sendFriendRequest(user._id, receiverId);
+        setRecommendations(recommendations.filter(r => r._id !== receiverId));
+    };
 
     return (
         <div>
-            <h3>Friend Recommendations</h3>
-            <ul>
-                {recommendations.map(rec => (
-                    <li key={rec._id}>{rec.username}</li>
-                ))}
-            </ul>
+            <h3>Recommended Friends</h3>
+            {recommendations.length > 0 ? (
+                <ul>
+                    {recommendations.map((rec) => (
+                        <li key={rec._id}>
+                            {rec.username} <button onClick={() => handleSendRequest(rec._id)}>Add Friend</button>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p>No recommendations available.</p>
+            )}
         </div>
     );
 };

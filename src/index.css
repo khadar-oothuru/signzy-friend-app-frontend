@@ -1,13 +1,15 @@
 @import "tailwindcss";
+@plugin "daisyui";
 
-* {
+/* * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
+} */
 
 body {
-  background: linear-gradient(135deg, #b8fba4, #e9c881, rgb(148, 232, 169), #9bbbf2);
+  /* background: linear-gradient(135deg, #b8fba4, #e9c881, rgb(148, 232, 169), #9bbbf2); */
+  background-color: #ffffff;
   font-family: 'Inter', sans-serif;
   color: #333;
 }
