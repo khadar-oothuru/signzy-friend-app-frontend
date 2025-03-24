@@ -70,7 +70,7 @@ const Navbar = () => {
         ) : (
           <div className="flex space-x-2">
             <Link to="/login" className="btn btn-primary btn-sm">Login</Link>
-            <Link to="/register" className="btn btn-secondary btn-sm">Sign Up</Link>
+            <Link to="/signup" className="btn btn-secondary btn-sm">Sign Up</Link>
           </div>
         )}
       </div>
