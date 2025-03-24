@@ -1,64 +1,119 @@
-import React,{ useState, useEffect, useContext } from "react";
-import API from "../api/api"; // Ensure API import is consistent
+import React, { useState, useEffect, useContext } from "react";
+import { getFriendRecommendations, sendFriendRequest } from "../api/api";
 import { AuthContext } from "../context/AuthContext";
-import UserSearch from "../components/UserSearch";
-import FriendList from "../pages/FriendList";
-import { sendFriendRequest } from "../api/api";
+import { MdPersonAdd, MdSearch } from "react-icons/md";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Home = () => {
     const { user } = useContext(AuthContext);
-    const [users, setUsers] = useState([]);
+    const [recommendations, setRecommendations] = useState([]);
+    const [filteredRecommendations, setFilteredRecommendations] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [sendingRequest, setSendingRequest] = useState(null);
+    const [searchQuery, setSearchQuery] = useState(""); // State to store search query
 
     useEffect(() => {
-        if (user) {
-            API.get("/").then((res) => {
-                setUsers(res.data);
-                setLoading(false);
-            }).catch((err) => {
-                setError(err.response?.data?.message || "Error fetching users");
-                setLoading(false);
-            });
+        if (user?._id) {
+            getFriendRecommendations(user._id)
+                .then((res) => {
+                    setRecommendations(res.data);
+                    setFilteredRecommendations(res.data); // Initialize filtered recommendations
+                })
+                .catch((err) => {
+                    console.error("Error fetching recommendations:", err);
+                    toast.error("Failed to fetch recommendations");
+                })
+                .finally(() => setLoading(false));
         }
-    }, [user]);
+    }, [user?._id]);
+
+    const handleSearch = (query) => {
+        setSearchQuery(query);
+        const filtered = recommendations.filter((rec) =>
+            rec.username.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredRecommendations(filtered);
+    };
 
     const handleSendRequest = async (receiverId) => {
+        setSendingRequest(receiverId);
         try {
             await sendFriendRequest(user._id, receiverId);
-            alert("Friend request sent!");
-            setUsers(users.filter(u => u._id !== receiverId)); // Remove from list after sending request
+            setFilteredRecommendations(filteredRecommendations.filter((r) => r._id !== receiverId));
+            toast.success("Friend request sent successfully!");
         } catch (error) {
-            alert("Failed to send request");
+            console.error("Error sending request:", error);
+            toast.error("Failed to send friend request");
+        } finally {
+            setSendingRequest(null);
         }
     };
 
-    if (!user) return <p>Please log in to view users.</p>;
-    if (loading) return <p>Loading users...</p>;
-    if (error) return <p>{error}</p>;
+    return loading ? (
+        <p className="text-gray-500 text-center flex items-center justify-center py-4">
+            <span className="loading loading-spinner loading-md"></span> Loading recommendations...
+        </p>
+    ) : (
+        <div className="space-y-4 px-4">
+            {/* Search Bar with Icon */}
+            <div className="flex justify-center mb-6">
+                <div className="relative w-full max-w-md">
+                    <input
+                        type="text"
+                        placeholder="Search for friends..."
+                        value={searchQuery}
+                        onChange={(e) => handleSearch(e.target.value)}
+                        className="p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all pl-10"
+                    />
+                    <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                </div>
+            </div>
 
-    return (
-        <div>
-            <h2>Home</h2>
+            <div className="bg-white p-6 rounded-lg shadow-lg space-y-4">
+                <h2 className="text-2xl font-semibold text-gray-800 text-center mb-4">
+                    Friend Recommendations
+                </h2>
 
-            {/* User Search Component */}
-            <UserSearch onSelectUser={(selectedUser) => console.log("Selected:", selectedUser)} />
-
-            {/* Users List */}
-            <h3>All Users</h3>
-            <ul>
-                {users.map((u) => (
-                    <li key={u._id}>
-                        {u.username} 
-                        {u._id !== user._id && (
-                            <button onClick={() => handleSendRequest(u._id)}>Add Friend</button>
-                        )}
-                    </li>
-                ))}
-            </ul>
-
-            {/* Friend List Component */}
-            <FriendList />
+                {filteredRecommendations.length > 0 ? (
+                    <ul className="space-y-3">
+                        {filteredRecommendations.map((rec) => (
+                            <li
+                                key={rec._id}
+                                className="flex items-center justify-between bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow"
+                            >
+                                <div className="flex items-center gap-4">
+                                    {/* Profile Image Placeholder */}
+                                    <img
+                                        src={rec.profileImage || "https://via.placeholder.com/40"}
+                                        alt={rec.username}
+                                        className="w-10 h-10 rounded-full object-cover"
+                                    />
+                                    <span className="font-medium text-gray-800">{rec.username}</span>
+                                </div>
+                                <button
+                                    onClick={() => handleSendRequest(rec._id)}
+                                    disabled={sendingRequest === rec._id}
+                                    className={`relative flex items-center gap-2 px-5 py-2 rounded-lg text-white font-semibold transition-all duration-300 ${
+                                        sendingRequest === rec._id
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-md hover:shadow-lg transform hover:scale-105"
+                                    }`}
+                                >
+                                    {sendingRequest === rec._id ? (
+                                        <span className="loading loading-spinner loading-sm"></span>
+                                    ) : (
+                                        <MdPersonAdd className="text-xl" />
+                                    )}
+                                    {sendingRequest === rec._id ? "Sending..." : "Add Friend"}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-center text-gray-500">No recommendations found matching your search.</p>
+                )}
+            </div>
         </div>
     );
 };

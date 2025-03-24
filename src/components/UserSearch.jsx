@@ -1,37 +1,23 @@
-import { useState, useEffect } from "react";
-import { searchUsers } from "../api/api";
+// src/components/UserSearch.js
+import React, { useState } from "react";
 
-const UserSearch = ({ onSelectUser }) => {
+const UserSearch = ({ onSearch }) => {
     const [query, setQuery] = useState("");
-    const [results, setResults] = useState([]);
 
-    useEffect(() => {
-        if (query.length > 2) {
-            searchUsers(query)
-                .then((res) => setResults(res.data))
-                .catch((err) => console.error("Search error:", err));
-        } else {
-            setResults([]);
-        }
-    }, [query]);
+    const handleInputChange = (e) => {
+        const newQuery = e.target.value;
+        setQuery(newQuery);
+        onSearch(newQuery); // Trigger the search on every input change
+    };
 
     return (
         <div>
-            <input
-                type="text"
-                placeholder="Search users..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
+            <input 
+                type="text" 
+                placeholder="Search users..." 
+                value={query} 
+                onChange={handleInputChange} 
             />
-            {results.length > 0 && (
-                <ul>
-                    {results.map((user) => (
-                        <li key={user._id} onClick={() => onSelectUser(user)}>
-                            {user.username}
-                        </li>
-                    ))}
-                </ul>
-            )}
         </div>
     );
 };

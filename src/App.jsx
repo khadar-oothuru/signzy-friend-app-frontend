@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Register from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import UpdateProfile from "./pages/UpdateProfile";
+import Footer from "./components/Footer";
 
 const App = () => (
     <AuthProvider>
@@ -19,6 +20,7 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/update-profile" element={<UpdateProfile />} />
             </Routes>
+            <Footer/>
         </Router>
     </AuthProvider>
 );

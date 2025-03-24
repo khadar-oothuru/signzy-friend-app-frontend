@@ -1,13 +1,14 @@
 import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { Link } from "react-router";
+import { Link } from "react-router"; // Fixed incorrect import
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
 
   return (
-    <nav className="navbar  shadow-sm p-4">
+    <nav className="navbar fixed top-0 left-0 w-full bg-white bg-opacity-90 shadow-md backdrop-blur-md z-50 px-6">
       <div className="navbar-start">
+        {/* Mobile Menu */}
         <div className="dropdown">
           <button tabIndex={0} className="btn btn-ghost lg:hidden">
             <svg
@@ -29,61 +30,48 @@ const Navbar = () => {
             tabIndex={0}
             className="menu menu-sm dropdown-content mt-3 w-52 p-2 bg-base-100 rounded-box shadow z-10"
           >
-            <li>
-              <Link to="/">Home</Link>
-            </li>
+            <li><Link to="/">Home</Link></li>
             {user && (
               <>
-              <li>
-                <Link to="/update-profile">Update Profile</Link>
-              </li>
-              <li>
-                <Link to="/dashboard"> Dashboard</Link>
-              </li>
-            </>
+                <li><Link to="/update-profile">Update Profile</Link></li>
+                <li><Link to="/dashboard">Dashboard</Link></li>
+              </>
             )}
           </ul>
         </div>
-        <Link to="/" className="btn btn-ghost text-xl">
-          Friend App
+        {/* Stylish Snizy Logo */}
+        <Link to="/" className="btn btn-ghost text-2xl font-extrabold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent tracking-wide">
+        SIGNZY✨
         </Link>
       </div>
 
+      {/* Center Navigation (Visible on larger screens) */}
       <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">
-          <li>
-            <Link to="/">Home</Link>
-          </li>
+        <ul className="menu menu-horizontal px-1 space-x-4">
+          <li><Link to="/" className="hover:text-primary">Home</Link></li>
           {user && (
             <>
-              <li>
-                <Link to="/update-profile">Update Profile</Link>
-              </li>
-              <li>
-                <Link to="/dashboard"> Dashboard</Link>
-              </li>
+              <li><Link to="/update-profile" className="hover:text-primary">Update Profile</Link></li>
+              <li><Link to="/dashboard" className="hover:text-primary">Dashboard</Link></li>
             </>
           )}
         </ul>
       </div>
 
+      {/* User Authentication Section */}
       <div className="navbar-end">
         {user ? (
-          <>
-            <span className="mr-4">Welcome, {user.username}!</span>
-            <button onClick={logout} className="btn btn-error">
+          <div className="flex items-center space-x-4">
+            <span className="text-gray-700 font-medium">Welcome, {user.username}!</span>
+            <button onClick={logout} className="btn btn-error btn-sm">
               Logout
             </button>
-          </>
+          </div>
         ) : (
-          <>
-            <Link to="/login" className="btn btn-primary mr-2">
-              Login
-            </Link>
-            <Link to="/register" className="btn btn-secondary">
-              Sign Up
-            </Link>
-          </>
+          <div className="flex space-x-2">
+            <Link to="/login" className="btn btn-primary btn-sm">Login</Link>
+            <Link to="/register" className="btn btn-secondary btn-sm">Sign Up</Link>
+          </div>
         )}
       </div>
     </nav>
